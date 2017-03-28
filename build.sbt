@@ -1,4 +1,4 @@
-name := """faacets-playnew"""
+name := "faacets-playnew"
 organization := "com.faacets"
 
 version := "1.0-SNAPSHOT"
@@ -16,8 +16,6 @@ resolvers ++= Seq(
   Resolver.sonatypeRepo("snapshots"),
   Resolver.sonatypeRepo("releases")
 )
-
-libraryDependencies += filters
 
 libraryDependencies ++= Seq(
   "com.faacets" %% "faacets-core" % faacetsVersion,
