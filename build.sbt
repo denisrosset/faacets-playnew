@@ -3,6 +3,8 @@ organization := "com.faacets"
 
 version := "1.0-SNAPSHOT"
 
+val faacetsVersion = "0.13.1.2"
+
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
 scalaVersion := "2.12.1"
