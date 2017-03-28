@@ -24,6 +24,8 @@ libraryDependencies ++= Seq(
   "com.faacets" %% "faacets-data" % faacetsVersion
 )
 
+enablePlugins(DockerPlugin)
+
 // libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "3.0.0" % Test
 
 // Adds additional packages into Twirl
