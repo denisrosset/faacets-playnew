@@ -1,31 +1,33 @@
-@(widgets: Seq[Widget], form: Form[Widget])(implicit messages: play.api.i18n.Messages, request: RequestHeader, csrfConfig: play.filters.csrf.CSRFConfig)
+@(widgets: Seq[Widget], form: Form[Widget])(implicit messages: play.api.i18n.Messages, request: RequestHeader)
 
 @main("Widgets") {
 
-<h1>Widgets</h1>
-<table>
-  <thead>
-    <tr><th>Name</th><th>Price</th>
-  </thead>
-  <tbody>
-    @for(w <- widgets) {
-	      <tr><td>@w.name</td><td>@w.price</td></tr>
-	      }
-  </tbody>
-</table>
+    <h1>Widgets</h1>
+    <table>
+        <thead>
+            <tr><th>Name</th><th>Price</th>
+        </thead>
+        <tbody>
+        @for(w <- widgets) {
+            <tr><td>@w.name</td>
+                <td>@w.price</td></tr>
+        }
+        </tbody>
+    </table>
 
-<hr/>
+    <hr/>
 
-@helper.form(routes.HomeController.createWidget) {
+    @helper.form(routes.HomeController.createWidget) {
 
-@helper.CSRFshim.formField
+        @helper.CSRF.formField
+        @helper.inputRadioGroup(form("type1"), Seq("Screw" -> "S", "Nail" -> "N"))
 
-@helper.inputText(form("name"))
+        @helper.inputText(form("name"))
 
-@helper.inputText(form("price"))
+        @helper.inputText(form("price"))
 
-<button type="submit">Create widget</button>
+        <button type="submit">Create widget</button>
 
-}
+    }
 
 }

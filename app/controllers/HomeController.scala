@@ -1,27 +1,26 @@
 package controllers
 
 import javax.inject._
+
 import play.api._
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
 import play.api.i18n.I18nSupport
-import play.filters.csrf.CSRFConfig
 
 import scala.collection.mutable.ArrayBuffer
-
 import models._
 
 /**
  * This controller creates an `Action` to handle HTTP requests to the
  * application's home page.
  */
-class HomeController @Inject() (components: ControllerComponents)(implicit csrfConfig: CSRFConfig) extends AbstractController(components) with I18nSupport {
+class HomeController @Inject() (components: ControllerComponents) extends AbstractController(components) with I18nSupport {
 
   private val widgets = ArrayBuffer(
-    Widget("Widget 1", 123),
-    Widget("Widget 2", 456),
-    Widget("Widget 3", 789)
+    Widget("S", "Widget 1", 123),
+    Widget("N", "Widget 2", 456),
+    Widget("S", "Widget 3", 789)
   )
 
   def listWidgets = Action { implicit request =>
@@ -64,6 +63,7 @@ object HomeController {
     */
   val createWidgetForm = Form(
     mapping(
+      "type1" -> text,
       "name" -> text,
       "price" -> number
     )(Widget.apply)(Widget.unapply)

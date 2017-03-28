@@ -1,4 +1,4 @@
 package models
 
-case class Widget(name: String, price: Int)
+case class Widget(typ: String, name: String, price: Int)
 
