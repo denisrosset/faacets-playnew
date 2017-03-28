@@ -19,7 +19,6 @@
 
     @helper.form(routes.HomeController.createWidget) {
 
-        @helper.CSRF.formField
         @helper.inputRadioGroup(form("type1"), Seq("Screw" -> "S", "Nail" -> "N"))
 
         @helper.inputText(form("name"))
