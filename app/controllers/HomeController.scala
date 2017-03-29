@@ -2,7 +2,7 @@ package controllers
 
 import javax.inject._
 
-import cats.data.Validated
+import cats.data.{Validated, ValidatedNel}
 import com.faacets.core.Scenario
 import com.faacets.data.Textable
 import play.api._
@@ -13,7 +13,10 @@ import play.api.i18n.I18nSupport
 
 import scala.collection.mutable.ArrayBuffer
 import models._
+import play.api.data.format.Formatter
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
+import scalin.immutable.Vec
+import spire.math.Rational
 
 /**
  * This controller creates an `Action` to handle HTTP requests to the
@@ -27,23 +30,26 @@ class HomeController @Inject() (components: ControllerComponents) extends Abstra
     Widget("S", "Widget 3", 789)
   )
 
-  def listWidgets = Action { implicit request =>
+  def enterUserExpr = Action { implicit request =>
     // Pass an unpopulated form to the template
-    Ok(views.html.listWidgets(widgets.toSeq, HomeController.createWidgetForm))
+    Ok(views.html.userExpr(HomeController.enterUserExprForm))
   }
 
-  // This will be the action that handles our form post
-  def createWidget = Action { implicit request =>
-    val formValidationResult = HomeController.createWidgetForm.bindFromRequest
+  def parseUserExpr = Action { implicit request =>
+    val formValidationResult = HomeController.enterUserExprForm.bindFromRequest
     formValidationResult.fold({ formWithErrors =>
       // This is the bad case, where the form had validation errors.
       // Let's show the user the form again, with the errors highlighted.
       // Note how we pass the form with errors to the template.
-      BadRequest(views.html.listWidgets(widgets.toSeq, formWithErrors))
-    }, { widget =>
+      BadRequest(views.html.userExpr(formWithErrors))
+    }, { userExpr =>
       // This is the good case, where the form was successfully parsed as a Widget.
-      widgets.append(widget)
-      Redirect(routes.HomeController.listWidgets)
+      // widgets.append(widget)
+      val dExpr = userExpr.toDExpr
+      val expr = dExpr.split._1
+      expr.symmetryGroup
+      import com.faacets.defaults._
+      Ok(views.html.userExpr(formValidationResult, expr.asYaml))
     })
   }
 
@@ -57,41 +63,49 @@ class HomeController @Inject() (components: ControllerComponents) extends Abstra
   def index = Action { implicit request =>
     Ok(views.html.index())
   }
+
 }
 
 object HomeController {
 
-  /** The form definition for the "create a widget" form.
-    *  It specifies the form fields and their types,
-    *  as well as how to convert from a Widget to form data and vice versa.
-    */
-  val createWidgetForm = Form(
-    mapping(
-      "type1" -> text,
-      "name" -> text,
-      "price" -> number
-    )(Widget.apply)(Widget.unapply)
-  )
+  import UserVecRational.userVecRationalTextable
 
   val enterUserExprForm = Form(
     mapping(
-      "scenario" -> text.verifying(scenarioConstraint),
-      "representation" -> text.verifying,
-      "coefficients" -> text
-    )(UserExprData.apply)(UserExprData.unapply)
+      "representation" -> of[Representation],
+      "scenario" -> of[Scenario].verifying(smallScenario),
+      "coefficients" -> of[Vec[Rational]]
+    )(UserExpr.apply)(UserExpr.unapply).verifying(UserExpr.constraint)
   )
 
-  val scenarioConstraint = constraintFromTextable[Scenario]("constraint.scenario")
+  lazy val smallScenario: Constraint[Scenario] = Constraint[Scenario]("") {
+    scenario =>
+      if (scenario.nParties < 4 && scenario.maxNumInputs < 5 && scenario.maxNumOutputs < 5 && scenario.shapeP.size <= 100)
+        Valid
+      else
+        Invalid(Seq(ValidationError("In the web interface, we only support small scenarios with nParties < 4, nInputs < 5, nOutputs < 5, and a maximum number of coefficients of 100")))
+  }
 
-  def constraintFromTextable[T:Textable](name: String): Constraint[String] = Constraint(name)({
-    plainText =>
-      Textable[T].fromText(plainText) match {
-        case Validated.Invalid(errors) =>
-          val vErrors: Seq[ValidationError] = errors.toList.map(ValidationError(_))
-          Invalid(vErrors)
-        case Validated.Valid(_) =>
-          Valid
+  implicit lazy val scenarioFormatter: Formatter[Scenario] = formatterFromTextable[Scenario](None)
+  implicit lazy val vecRationalFormatter: Formatter[Vec[Rational]] = formatterFromTextable[Vec[Rational]](None)
+
+  def formatterFromTextable[T:Textable](defaultIfEmpty: Option[T]): Formatter[T] = new Formatter[T] {
+
+    def bind(key: String, data: Map[String, String]): Either[Seq[FormError], T] =
+    data.get(key) match {
+      case Some(string) => Textable[T].fromText(string) match {
+        case Validated.Invalid(errors) => Left(errors.toList.map(err => FormError(key, err)))
+        case Validated.Valid(t) => Right(t)
       }
-  })
+      case None => defaultIfEmpty match {
+        case Some(default) => Right(default)
+        case None => Left(Seq(FormError(key, "error.required")))
+      }
+        Left(Seq(FormError(key, "error.required")))
+    }
+
+    def unbind(key: String, value: T): Map[String, String] = Map(key -> Textable[T].toText(value))
+
+  }
 
 }

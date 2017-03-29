@@ -1,0 +1,32 @@
+@(form: Form[UserExpr], yaml: String = "")(implicit messages: play.api.i18n.Messages, request: RequestHeader)
+
+@main("What the faacet?") {
+
+    <h1>What the faacet?</h1>
+
+    @helper.form(routes.HomeController.parseUserExpr) {
+
+        @helper.inputText(form("scenario"))
+
+        @helper.inputRadioGroup(form("representation"),
+            Seq("PVec" -> "Full vector P(ab..|xy..)",
+                "CGVec" -> "Collins-Gisin vector",
+                "CorrVec" -> "Correlators vector"))
+
+        @helper.textarea(form("coefficients"))
+
+        @if(form.hasGlobalErrors) {
+            <ul>
+            @for(error <- form.globalErrors) {
+                <li>@Messages(error.messages, error.args)</li>
+            }
+            </ul>
+        }
+
+        <button type="submit">Compute projection and symmetry group</button>
+
+    }
+
+    <pre>@yaml</pre>
+
+}
