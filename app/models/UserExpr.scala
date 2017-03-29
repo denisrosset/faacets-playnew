@@ -1,11 +1,9 @@
 package models
 
-sealed trait Representation
+import com.faacets.defaults._
+import com.faacets.core._
+import play.api.data.Mapping
 
-object Representation {
-  case object Probabilities extends Representation
-}
-
-case class UserExpr() {
+case class UserExprData(representation: String, scenario: String, coefficients: String) {
 
 }

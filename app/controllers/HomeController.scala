@@ -2,6 +2,9 @@ package controllers
 
 import javax.inject._
 
+import cats.data.Validated
+import com.faacets.core.Scenario
+import com.faacets.data.Textable
 import play.api._
 import play.api.mvc._
 import play.api.data._
@@ -10,6 +13,7 @@ import play.api.i18n.I18nSupport
 
 import scala.collection.mutable.ArrayBuffer
 import models._
+import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 
 /**
  * This controller creates an `Action` to handle HTTP requests to the
@@ -68,5 +72,26 @@ object HomeController {
       "price" -> number
     )(Widget.apply)(Widget.unapply)
   )
+
+  val enterUserExprForm = Form(
+    mapping(
+      "scenario" -> text.verifying(scenarioConstraint),
+      "representation" -> text.verifying,
+      "coefficients" -> text
+    )(UserExprData.apply)(UserExprData.unapply)
+  )
+
+  val scenarioConstraint = constraintFromTextable[Scenario]("constraint.scenario")
+
+  def constraintFromTextable[T:Textable](name: String): Constraint[String] = Constraint(name)({
+    plainText =>
+      Textable[T].fromText(plainText) match {
+        case Validated.Invalid(errors) =>
+          val vErrors: Seq[ValidationError] = errors.toList.map(ValidationError(_))
+          Invalid(vErrors)
+        case Validated.Valid(_) =>
+          Valid
+      }
+  })
 
 }

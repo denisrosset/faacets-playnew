@@ -12,10 +12,9 @@ Install Docker: follow the instructions on the Docker website, including
 ### Download, compile and run the website
 
 1) Clone the Git repository
-2) Run `git submodule update --init` to download the Spire SNAPSHOT jars (temporary hack)
-3) Run `sbt docker:publishLocal` to create a local Docker container with the version
-4) Run `docker run -e APPLICATION_SECRET=1234 --net="host" faacets-playnew:1.0-SNAPSHOT`
+2) Run `sbt docker:publishLocal` to create a local Docker container with the version
+3) Run `docker run -e APPLICATION_SECRET=1234 --net="host" faacets-playnew:0.14.1.0-SNAPSHOT`
    where `1234` is the application secret (does not matter much, as all the website is public)
-   and where `1.0-SNAPSHOT` is the version you want to run. By default, we run the networking
+   and where `0.14.1.0-SNAPSHOT` is the version you want to run. By default, we run the networking
    on the host (i.e. the port 9000 will be opened on the host).
-5) Connect to http://localhost:9000
+4) Connect to http://localhost:9000
