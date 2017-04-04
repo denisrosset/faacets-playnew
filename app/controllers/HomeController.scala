@@ -3,7 +3,7 @@ package controllers
 import javax.inject._
 
 import cats.data.{Validated, ValidatedNel}
-import com.faacets.core.Scenario
+import com.faacets.core.{Expr, Scenario}
 import com.faacets.data.Textable
 import play.api._
 import play.api.mvc._
@@ -49,7 +49,8 @@ class HomeController @Inject() (components: ControllerComponents) extends Abstra
       val expr = dExpr.split._1
       expr.symmetryGroup
       import com.faacets.defaults._
-      Ok(views.html.userExpr(formValidationResult, expr.asYaml))
+      import com.faacets.operation._
+      Ok(views.html.userExpr(formValidationResult, expr.asYaml, ProductExtractor[Expr].forceExtract(expr).asYaml))
     })
   }
 
@@ -74,7 +75,7 @@ object HomeController {
     mapping(
       "representation" -> of[Representation],
       "scenario" -> of[Scenario].verifying(smallScenario),
-      "coefficients" -> of[Vec[Rational]]
+      "coefficients" -> text
     )(UserExpr.apply)(UserExpr.unapply).verifying(UserExpr.constraint)
   )
 

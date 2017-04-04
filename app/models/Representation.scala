@@ -2,14 +2,17 @@ package models
 
 import cats.data.{Validated, ValidatedNel}
 import com.faacets.core.{DExpr, Expr, Scenario}
+import com.faacets.data.Textable
 import play.api.data.FormError
 import play.api.data.format.Formatter
 import scalin.immutable.Vec
 import spire.math.Rational
 
+import UserVecRational.userVecRationalTextable
+
 sealed abstract class Representation(val textValue: String) {
 
-  def validateExpr(scenario: Scenario, coefficients: Vec[Rational]): ValidatedNel[String, DExpr]
+  def validateExpr(scenario: Scenario, coeffString: String): ValidatedNel[String, DExpr]
 
 }
 
@@ -17,32 +20,32 @@ object Representation {
 
   case object ProbabilityVector extends Representation("PVec") {
 
-    def validateExpr(scenario: Scenario, coefficients: Vec[Rational]) = DExpr.validate(scenario, coefficients)
+    def validateExpr(scenario: Scenario, coeffString: String) =
+      userVecRationalTextable.fromText(coeffString) andThen { coeffs => DExpr.validate(scenario, coeffs) }
 
   }
 
   case object CollinsGisinVector extends Representation("CGVec") {
 
-    def validateExpr(scenario: Scenario, coefficients: Vec[Rational]) =
-      if (coefficients.length != scenario.shapeNG.size)
-        Validated.invalidNel(s"Incorrect coefficient vector length ${coefficients.length}, should be ${scenario.shapeNG.size}")
-      else
-        Validated.valid(Expr.collinsGisin(scenario, coefficients).toDExpr)
+    def validateExpr(scenario: Scenario, coeffString: String) =
+      Expr.parseCollinsGisinVector(scenario, coeffString).map(_.toDExpr)
 
   }
 
   case object CorrelatorsVector extends Representation("CorrVec") {
 
-    def validateExpr(scenario: Scenario, coefficients: Vec[Rational]) =
-      if (scenario.minNumOutputs < 2 || scenario.maxNumOutputs > 2)
-        Validated.invalidNel(s"Correlators are only defined for scenarios with binary outputs")
-      else if (coefficients.length != scenario.shapeNC.size)
-        Validated.invalidNel(s"Incorrect coefficient vector length ${coefficients.length} should be ${scenario.shapeNG.size}")
-      else
-        Validated.valid(Expr.correlators(scenario, coefficients).toDExpr)
+    def validateExpr(scenario: Scenario, coeffString: String) =
+      Expr.parseCorrelatorsVector(scenario, coeffString).map(_.toDExpr)
+
   }
 
-  val valid = Set(ProbabilityVector, CollinsGisinVector, CorrelatorsVector).map(rep => (rep.textValue, rep)).toMap
+  case object Expression extends Representation("Expr") {
+
+    def validateExpr(scenario: Scenario, expression: String) = DExpr.parseExpression(scenario, expression)
+
+  }
+
+  val valid = Set(ProbabilityVector, CollinsGisinVector, CorrelatorsVector, Expression).map(rep => (rep.textValue, rep)).toMap
 
   implicit lazy val formatter: Formatter[Representation] = new Formatter[Representation] {
 

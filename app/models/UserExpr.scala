@@ -10,7 +10,7 @@ import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import scalin.immutable.{Mat, Vec}
 import scalin.immutable.dense._
 
-case class UserExpr(representation: Representation, scenario: Scenario, coefficients: Vec[Rational]) {
+case class UserExpr(representation: Representation, scenario: Scenario, coefficients: String) {
 
   def toDExpr: DExpr = representation.validateExpr(scenario, coefficients).getOrElse(sys.error("Cannot happen"))
 

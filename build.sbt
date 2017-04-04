@@ -3,9 +3,9 @@ organization := "com.faacets"
 
 version := "0.14.1.0-SNAPSHOT"
 
-val faacetsVersion = "0.14.1.1"
+val faacetsVersion = "0.14.1.4"
 
-val alascVersion = "0.14.1.0"
+val alascVersion = "0.14.1.2"
 val catsVersion = "0.9.0"
 val circeVersion = "0.7.0"
 val circeYamlVersion = "0.5.0"
@@ -27,6 +27,7 @@ resolvers ++= Seq(
 
 libraryDependencies ++= Seq(
   "com.faacets" %% "faacets-core" % faacetsVersion,
+  "com.faacets" %% "faacets-operation" % faacetsVersion,
   "com.faacets" %% "faacets-data" % faacetsVersion,
   "net.alasc" %% "alasc-core" % alascVersion,
   "org.typelevel" %% "cats" % catsVersion,

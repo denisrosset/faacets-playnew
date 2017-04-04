@@ -1,4 +1,4 @@
-@(form: Form[UserExpr], yaml: String = "")(implicit messages: play.api.i18n.Messages, request: RequestHeader)
+@(form: Form[UserExpr], yamlGroup: String = "", yamlDec: String = "")(implicit messages: play.api.i18n.Messages, request: RequestHeader)
 
 @main("What the faacet?") {
 
@@ -11,7 +11,8 @@
         @helper.inputRadioGroup(form("representation"),
             Seq("PVec" -> "Full vector P(ab..|xy..)",
                 "CGVec" -> "Collins-Gisin vector",
-                "CorrVec" -> "Correlators vector"))
+                "CorrVec" -> "Correlators vector",
+                "Expr" -> "Expression"))
 
         @helper.textarea(form("coefficients"))
 
@@ -27,6 +28,9 @@
 
     }
 
-    <pre>@yaml</pre>
+    <h2>Projection in NS subspace, with its symmetry group</h2>
+    <pre>@yamlGroup</pre>
+    <h2>Its canonical decomposition</h2>
+    <pre>@yamlDec</pre>
 
 }
